@@ -8,9 +8,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-```
 [Docker](https://www.docker.com/products/docker-desktop)
-```
 
 ### Running the Docker
 
