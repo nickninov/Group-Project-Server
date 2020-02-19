@@ -4,7 +4,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const passport = require("passport");
 const config = require("./db");
+const authRoutes = require("./routes/authRoutes");
 
 // connect to database
 mongoose.connect(config.DB, { useNewUrlParser: true }).then(
@@ -18,10 +20,16 @@ mongoose.connect(config.DB, { useNewUrlParser: true }).then(
 
 const app = express();
 
+// initialize middleware for authentication and body pasring
+app.use(passport.initialize());
+require("./passport")(passport);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// debug route for testing API is live
+// Use Api routes in the App
+app.use('/v1/auth', authRoutes);
+
+// debug route for testing API
 app.get("/", function(req, res) {
   res.send("hello");
 });

@@ -30,7 +30,7 @@ Development environment is up and running!
 
 ### Test the default route
 
-Send below request:
+Send request:
 
 ```
 GET http://127.0.0.1:80/
