@@ -15,7 +15,7 @@ router.route("/account").get(userController.getAcc);
 router.route("/account").put(userController.updateAcc);
 
 // user cart routes
-router.route("/cart").post(userController.getCart);
+router.route("/cart").get(userController.getCart);
 
 router.route("/cart").put(userController.updateCart);
 

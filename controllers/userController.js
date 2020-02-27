@@ -2,12 +2,12 @@
 
 // require models
 const User = require("../models/userModel");
-const Product = require("../models/productModel");
+// const userValidation = require("./validation/userValidation.js");
 
 // route to get user avatar info
 exports.getUser = function(req, res) {
   User.findById(req.user.id, "firstName cart", {}).then(function(items) {
-    const data = { firstName: items.firstName, cart: items.cart.length };
+    const data = { firstName: items.firstName, cartAmount: items.cart.length };
     res.send(data);
   });
 };
@@ -25,6 +25,12 @@ exports.getAcc = function(req, res) {
 
 // route to update user account info
 exports.updateAcc = function(req, res) {
+  // check if request is valid
+  // const { errors, isValid } = userValidation.updateAcc(req.body);
+  // if (!isValid) {
+  //   return res.status(400).json(errors);
+  // }
+
   User.findByIdAndUpdate(
     req.user.id,
     {
@@ -42,20 +48,29 @@ exports.updateAcc = function(req, res) {
 
 // route to get user cart
 exports.getCart = function(req, res) {
-  User.findById(req.user.id, "cart", {}).then(function(data) {
-    res.send(data);
-  });
+  User.findById(req.user.id, "cart", {})
+    .populate("cart")
+    .then(function(data) {
+      res.send(data);
+    });
 };
 
 // route to update user cart
 exports.updateCart = function(req, res) {
+  // check if request is valid
+  // const { errors, isValid } = userValidation.updateCart(req.body);
+  // if (!isValid) {
+  //   return res.status(400).json(errors);
+  // }
   User.findByIdAndUpdate(
     req.user.id,
     {
       cart: req.body.cart
     },
     { new: true, select: "cart" }
-  ).then(function(data) {
-    res.send(data);
-  });
+  )
+    .populate("cart")
+    .then(function(data) {
+      res.send(data);
+    });
 };

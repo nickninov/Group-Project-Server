@@ -3,12 +3,19 @@
 // require libraries and files
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const authValidation = require("./validation/authValidation.js");
 
 // require user model
 const User = require("../models/userModel");
 
 // route for new user registration
-exports.new = function(req, res) {
+exports.register = function(req, res) {
+
+    // check if request is valid
+    const { errors, isValid } = authValidation.register(req.body);
+    if (!isValid) {
+      return res.status(400).json(errors);
+    }  
 
   // check if email already exists
   User.findOne({
@@ -21,7 +28,7 @@ exports.new = function(req, res) {
       const newUser = new User({
         email: req.body.email,
         password: req.body.password,
-        confirm_password: req.body.confirm_password,
+        confirmPassword: req.body.confirmPassword,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         phone: req.body.phone
@@ -67,11 +74,17 @@ exports.new = function(req, res) {
 };
 
 // login route
-exports.update = function(req, res) {
+exports.login = function(req, res) {
 
+  // check if request is valid
+  const { errors, isValid } = authValidation.login(req.body);
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
+  // check if user exists
   const email = req.body.email;
   const password = req.body.password;
-  // check if user exists
   User.findOne({ email }).then(user => {
     if (!user) {
       // errors = 'User not found';

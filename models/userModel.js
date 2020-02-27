@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 // schema design for address
-const AddressSchema = new Schema({ 
+const AddressSchema = new Schema({
   firstLine: {
     type: String,
     required: true

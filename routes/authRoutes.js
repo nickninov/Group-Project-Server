@@ -8,9 +8,9 @@ const router = express.Router();
 var authController = require("../controllers/authController");
 
 // auth routes
-router.route("/login").post(authController.update);
+router.route("/login").post(authController.login);
 
-router.route("/register").post(authController.new);
+router.route("/register").post(authController.register);
 
 // export API routes
 module.exports = router;

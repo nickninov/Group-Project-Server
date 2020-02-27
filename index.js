@@ -29,7 +29,11 @@ app.use(bodyParser.json());
 
 // use api routes in the App
 app.use("/v1/auth", authRoutes);
-app.use("/v1/user", passport.authenticate("jwt", { session: false }), userRoutes);
+app.use(
+  "/v1/user",
+  passport.authenticate("jwt", { session: false }),
+  userRoutes
+);
 
 // debug route for testing API
 app.get("/", function(req, res) {
