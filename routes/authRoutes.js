@@ -1,18 +1,16 @@
 // authRoutes.js
 
-// Initialize express router
+// initialize express router
 const express = require("express");
 const router = express.Router();
 
-// Import auth controller
-var authController = require('../controller/authController');
+// import auth controller
+var authController = require("../controllers/authController");
 
-// Auth routes
-router.route('/login')
-    .post(authController.update);
+// auth routes
+router.route("/login").post(authController.update);
 
-router.route('/register')
-    .post(authController.new);
+router.route("/register").post(authController.new);
 
-// Export API routes
+// export API routes
 module.exports = router;
