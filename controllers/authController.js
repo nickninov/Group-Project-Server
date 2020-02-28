@@ -28,7 +28,6 @@ exports.register = function(req, res) {
       const newUser = new User({
         email: req.body.email,
         password: req.body.password,
-        confirmPassword: req.body.confirmPassword,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         phone: req.body.phone

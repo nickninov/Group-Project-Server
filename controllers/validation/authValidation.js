@@ -43,8 +43,8 @@ exports.register = function(data) {
   data.lastName = !isEmpty(data.lastName) ? data.lastName : "";
   data.phone = !isEmpty(data.phone) ? data.phone : "";
   data.password = !isEmpty(data.password) ? data.password : "";
-  data.passwordConfirm = !isEmpty(data.passwordConfirm)
-    ? data.passwordConfirm
+  data.confirmPassword = !isEmpty(data.confirmPassword)
+    ? data.confirmPassword
     : "";
 
   // email validation
@@ -76,13 +76,13 @@ exports.register = function(data) {
     errors.password = "Password must have 6 chars";
   }
 
-  if (Validator.isEmpty(data.passwordConfirm)) {
+  if (Validator.isEmpty(data.confirmPassword)) {
     errors.confirmPassword = "Password Confirmation is required";
-  } else if (!Validator.isLength(data.passwordConfirm, { min: 6, max: 30 })) {
+  } else if (!Validator.isLength(data.confirmPassword, { min: 6, max: 30 })) {
     errors = "Password Confirmation must have 6 chars";
   }
 
-  if (!Validator.equals(data.password, data.passwordConfirm)) {
+  if (!Validator.equals(data.password, data.confirmPassword)) {
     errors.confirmPassword = "Password and Confirm Password must match";
   }
 
