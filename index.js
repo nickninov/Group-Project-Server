@@ -27,6 +27,16 @@ require("./middlewares/passport")(passport);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+// attach CORS headers *Development ONLY - remove for production*
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
+
 // use api routes in the App
 app.use("/v1/auth", authRoutes);
 app.use(
