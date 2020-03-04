@@ -1,0 +1,3 @@
+[
+{ "_id" : { "$oid" : "5e5e41159d9244007b56e56f" }, "products" : [ { "$oid" : "5e5da05f60236d003da3ed4b" } ], "name" : "Test Category", "description" : "Test Description", "image" : "https://www.chillinoodle.co.uk/skin/frontend/chillinoodle/default/images/catalog/product/placeholder/image.jpg", "date" : { "$date" : "2020-03-03T11:35:49.410+0000" }, "__v" : 0 }
+]

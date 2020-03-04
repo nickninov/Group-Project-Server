@@ -1,34 +1,9 @@
 // userModel.js
 
 const mongoose = require("mongoose");
+const AddressSchema = require("./common/AddressSchema");
 
 const Schema = mongoose.Schema;
-
-// schema design for address
-const AddressSchema = new Schema({
-  firstLine: {
-    type: String,
-    required: true
-  },
-  secondLine: {
-    type: String,
-    required: true
-  },
-  townCity: {
-    type: String,
-    required: true
-  },
-  county: {
-    type: String,
-    required: true
-  },
-  postcode: {
-    type: String,
-    required: true
-  },
-  isBilling: Boolean,
-  isDelivery: Boolean
-});
 
 // schema design for users
 const UserSchema = new Schema({
@@ -56,7 +31,7 @@ const UserSchema = new Schema({
   cart: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product"
+      ref: "products"
     }
   ],
   date: {

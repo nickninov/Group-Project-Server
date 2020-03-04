@@ -9,7 +9,6 @@ var authController = require("../controllers/authController");
 
 // auth routes
 router.route("/login").post(authController.login);
-
 router.route("/register").post(authController.register);
 
 // export API routes

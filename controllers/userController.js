@@ -2,6 +2,8 @@
 
 // require models
 const User = require("../models/userModel");
+const Product = require("../models/productModel");
+const Order = require("../models/orderModel");
 // const userValidation = require("./validation/userValidation.js");
 
 // route to get user avatar info
@@ -38,7 +40,7 @@ exports.updateAcc = function(req, res) {
       lastName: req.body.lastName,
       email: req.body.email,
       phone: req.body.phone,
-      addresses: req.body.addresses
+      $set: { addresses: req.body.addresses }
     },
     { new: true, select: "firstName lastName email phone addresses" }
   ).then(function(data) {
@@ -49,7 +51,7 @@ exports.updateAcc = function(req, res) {
 // route to get user cart
 exports.getCart = function(req, res) {
   User.findById(req.user.id, "cart", {})
-    .populate("cart")
+    .populate("cart", "images sku stock name description discount price")
     .then(function(data) {
       res.send(data);
     });
@@ -65,11 +67,50 @@ exports.updateCart = function(req, res) {
   User.findByIdAndUpdate(
     req.user.id,
     {
-      cart: req.body.cart
+      $set: { cart: req.body.cart }
     },
     { new: true, select: "cart" }
   )
-    .populate("cart")
+    .populate({
+      path: "cart",
+      model: Product,
+      select: "images sku stock name description discount price"
+    })
+    .then(function(data) {
+      res.send(data);
+    });
+};
+
+// route to get user orders
+exports.getOrders = function(req, res) {
+  Order.find(
+    { user: req.user.id },
+    "status shippingAddress billingAddress products date orderNo"
+  )
+    .populate({
+      path: "products.product",
+      model: Product,
+      select: "quantity product images tags sku name description discount price"
+    })
+    .then(function(data) {
+      res.send(data);
+    });
+};
+
+// route to create user order
+exports.createOrder = function(req, res) {
+  // check if request is valid
+  // const { errors, isValid } = userValidation.createOrder(req.body);
+  // if (!isValid) {
+  //   return res.status(400).json(errors);
+  // }
+  new Order({
+    shippingAddress: req.body.shippingAddress,
+    billingAddress: req.body.billingAddress,
+    products: req.body.products,
+    user: req.user.id
+  })
+    .save()
     .then(function(data) {
       res.send(data);
     });

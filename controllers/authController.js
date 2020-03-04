@@ -10,19 +10,19 @@ const User = require("../models/userModel");
 
 // route for new user registration
 exports.register = function(req, res) {
-
-    // check if request is valid
-    const { errors, isValid } = authValidation.register(req.body);
-    if (!isValid) {
-      return res.status(400).json(errors);
-    }  
+  // check if request is valid
+  const { errors, isValid } = authValidation.register(req.body);
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
 
   // check if email already exists
   User.findOne({
     email: req.body.email
   }).then(user => {
     if (user) {
-      return res.status(400).json("Email already exists");
+      errors.email = "Email already exists";
+      return res.status(400).json(errors);
     } else {
       // create new user
       const newUser = new User({
@@ -74,7 +74,6 @@ exports.register = function(req, res) {
 
 // login route
 exports.login = function(req, res) {
-
   // check if request is valid
   const { errors, isValid } = authValidation.login(req.body);
   if (!isValid) {
@@ -86,8 +85,8 @@ exports.login = function(req, res) {
   const password = req.body.password;
   User.findOne({ email }).then(user => {
     if (!user) {
-      // errors = 'User not found';
-      return res.status(404).json("User not found");
+      errors.email = "User not found";
+      return res.status(404).json(errors);
     }
     // check password matches
     bcrypt.compare(password, user.password).then(isMatch => {
@@ -113,8 +112,8 @@ exports.login = function(req, res) {
           }
         );
       } else {
-        // errors = 'Incorrect Password';
-        return res.status(400).json("Incorrect Password");
+        errors.password = "Incorrect Password";
+        return res.status(400).json(errors);
       }
     });
   });

@@ -8,6 +8,7 @@ const passport = require("passport");
 const config = require("./db");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
+const searchRoutes = require("./routes/searchRoutes");
 
 // connect to database
 mongoose.connect(config.DB, { useNewUrlParser: true, ssl: false }).then(
@@ -39,6 +40,7 @@ app.use((req, res, next) => {
 
 // use api routes in the App
 app.use("/v1/auth", authRoutes);
+app.use("/v1/search", searchRoutes);
 app.use(
   "/v1/user",
   passport.authenticate("jwt", { session: false }),

@@ -43,7 +43,7 @@ Expected return "hello".
 This project utilises the popular MERN stack, see below for links.
 
 * [NodeJS](https://nodejs.org/) - JavaScript runtime environment
-* [Express](https://expressjs.com) -Web application framework
+* [Express](https://expressjs.com) - Web application framework
 * [MongoDB](https://www.mongodb.com) - Cross-platform document-oriented database
 
 ## Authors
