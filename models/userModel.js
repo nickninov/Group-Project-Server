@@ -30,8 +30,11 @@ const UserSchema = new Schema({
   addresses: [AddressSchema],
   cart: [
     {
+      quantity: Number,
+      product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "products"
+      }
     }
   ],
   date: {

@@ -51,7 +51,7 @@ exports.updateAcc = function(req, res) {
 // route to get user cart
 exports.getCart = function(req, res) {
   User.findById(req.user.id, "cart", {})
-    .populate("cart", "images sku stock name description discount price")
+    .populate("cart.product", "images sku stock name description discount price")
     .then(function(data) {
       res.send(data);
     });
@@ -60,6 +60,7 @@ exports.getCart = function(req, res) {
 // route to update user cart
 exports.updateCart = function(req, res) {
   // check if request is valid
+  // cart should be an array
   // const { errors, isValid } = userValidation.updateCart(req.body);
   // if (!isValid) {
   //   return res.status(400).json(errors);
@@ -72,7 +73,7 @@ exports.updateCart = function(req, res) {
     { new: true, select: "cart" }
   )
     .populate({
-      path: "cart",
+      path: "cart.product",
       model: Product,
       select: "images sku stock name description discount price"
     })
@@ -104,6 +105,9 @@ exports.createOrder = function(req, res) {
   // if (!isValid) {
   //   return res.status(400).json(errors);
   // }
+
+  // clear cart
+
   new Order({
     shippingAddress: req.body.shippingAddress,
     billingAddress: req.body.billingAddress,
