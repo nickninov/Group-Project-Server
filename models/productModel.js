@@ -1,5 +1,4 @@
 // productModel.js
-
 const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
@@ -47,7 +46,12 @@ const ProductSchema = new Schema({
     required: true
   },
   tags: [String],
-  categories: [],
+  categories: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "categories"
+    }
+  ],
   discount: {
     type: Number,
     required: true

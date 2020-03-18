@@ -6,6 +6,52 @@ const AddressSchema = require("./common/AddressSchema");
 
 const Schema = mongoose.Schema;
 
+// schema design for products
+const ProductSchema = new Schema({
+  sku: {
+    type: String,
+    required: true
+  },
+  shippingDetails: {
+    height: {
+      type: Number,
+      required: true
+    },
+    width: {
+      type: Number,
+      required: true
+    },
+    length: {
+      type: Number,
+      required: true
+    },
+    weight: {
+      type: Number,
+      required: true
+    }
+  },
+  name: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  discount: {
+    type: Number,
+    required: true
+  },
+  price: {
+    type: Number,
+    required: true
+  },
+  date: {
+    type: Date,
+    default: Date.now
+  }
+});
+
 // schema design for orders
 const OrderSchema = new Schema({
   shippingAddress: AddressSchema,
@@ -13,10 +59,7 @@ const OrderSchema = new Schema({
   products: [
     {
       quantity: Number,
-      product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "products"
-      }
+      product: ProductSchema
     }
   ],
   user: {
@@ -27,6 +70,8 @@ const OrderSchema = new Schema({
     type: String,
     default: "ordered"
   },
+  deliveryType: String,
+  isGift: Boolean,
   orderNo: Number,
   date: {
     type: Date,

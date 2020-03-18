@@ -12,7 +12,7 @@ const AddressSchema = new Schema({
   },
   secondLine: {
     type: String,
-    required: true
+    required: false
   },
   townCity: {
     type: String,
@@ -30,5 +30,5 @@ const AddressSchema = new Schema({
   isDelivery: Boolean
 });
 
-// export model
+// export schema
 module.exports = AddressSchema;

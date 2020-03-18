@@ -17,6 +17,10 @@ module.exports = passport => {
   passport.use(
     new JWTStrategy(opts, (jwt_payload, done) => {
       User.findById(jwt_payload.id)
+        .populate(
+          "cart.product",
+          "sku name description discount price shippingDetails stock"
+        )
         .then(user => {
           if (user) {
             return done(null, user);

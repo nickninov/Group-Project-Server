@@ -65,7 +65,7 @@ exports.register = function(data) {
   // phone validation
   if (Validator.isEmpty(data.phone)) {
     errors.phone = "Phone number is required";
-  } else if (Validator.isMobilePhone(data.phone, ["en-GB"])) {
+  } else if (!Validator.isMobilePhone(data.phone, ["en-GB"])) {
     errors.phone = "Phone number is invalid";
   }
 
