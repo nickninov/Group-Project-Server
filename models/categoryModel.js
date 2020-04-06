@@ -8,26 +8,26 @@ const Schema = mongoose.Schema;
 const CategorySchema = new Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   description: {
     type: String,
-    required: true
+    required: true,
   },
   products: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "products"
-    }
+      ref: "products",
+    },
   ],
   image: {
     type: String,
-    required: true
+    required: true,
   },
   date: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // create model from CategorySchema

@@ -13,21 +13,21 @@ opts.jwtFromRequest = ExtractJWT.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = "secret";
 
 // export passport for use
-module.exports = passport => {
+module.exports = (passport) => {
   passport.use(
     new JWTStrategy(opts, (jwt_payload, done) => {
       User.findById(jwt_payload.id)
         .populate(
           "cart.product",
-          "sku name description discount price shippingDetails stock"
+          "sku name description discount price shippingDetails stock images"
         )
-        .then(user => {
+        .then((user) => {
           if (user) {
             return done(null, user);
           }
           return done(null, false);
         })
-        .catch(err => console.error(err));
+        .catch((err) => console.error(err));
     })
   );
 };

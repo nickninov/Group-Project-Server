@@ -4,9 +4,10 @@
 const Validator = require("validator");
 const isEmpty = require("./common/isEmpty");
 const Product = require("../../models/productModel");
+const Order = require("../../models/orderModel");
 const mongoose = require("mongoose");
 
-exports.updateAcc = function(data) {
+exports.updateAcc = function (data) {
   let errors = {};
   let addresses = [];
 
@@ -40,7 +41,7 @@ exports.updateAcc = function(data) {
   }
 
   // addresses validation
-  data.addresses.forEach(address => {
+  data.addresses.forEach((address) => {
     let error = {};
 
     // convert empty fields to empty strings to use validator functions
@@ -48,8 +49,12 @@ exports.updateAcc = function(data) {
     address.townCity = !isEmpty(address.townCity) ? address.townCity : "";
     address.county = !isEmpty(address.county) ? address.county : "";
     address.postcode = !isEmpty(address.postcode) ? address.postcode : "";
-    address.isBilling = !isEmpty(address.isBilling) ? address.isBilling : "";
-    address.isDelivery = !isEmpty(address.isDelivery) ? address.isDelivery : "";
+    address.isBilling = !isEmpty(address.isBilling)
+      ? String(address.isBilling)
+      : "";
+    address.isDelivery = !isEmpty(address.isDelivery)
+      ? String(address.isDelivery)
+      : "";
 
     // firstLine validation
     if (Validator.isEmpty(address.firstLine)) {
@@ -96,11 +101,11 @@ exports.updateAcc = function(data) {
   // return errors or valid input = True
   return {
     errors,
-    isValid: isEmpty(errors)
+    isValid: isEmpty(errors),
   };
 };
 
-exports.updateCart = async function(data) {
+exports.updateCart = async function (data) {
   let errors = {};
   let cart = [];
 
@@ -108,7 +113,7 @@ exports.updateCart = async function(data) {
     // data.cart.forEach(async item => {
     let error = {};
     // convert empty fields to empty strings to use validator functions
-    item.quantity = !isEmpty(item.quantity) ? item.quantity : "";
+    item.quantity = !isEmpty(item.quantity) ? String(item.quantity) : "";
     item.product = !isEmpty(item.product) ? item.product : "";
 
     // product validation
@@ -121,11 +126,11 @@ exports.updateCart = async function(data) {
     }
 
     // quantity validation
-    if (Validator.isEmpty(String(item.quantity))) {
+    if (Validator.isEmpty(item.quantity)) {
       error.quantity = "Quantity is required";
-    } else if (!Validator.isNumeric(String(item.quantity))) {
+    } else if (!Validator.isNumeric(item.quantity)) {
       error.quantity = "Quantity should be a number";
-    } else if (Validator.equals(String(item.quantity), "0")) {
+    } else if (Validator.equals(item.quantity, "0")) {
       error.quantity = "Quantity should be greater than 0";
     }
 
@@ -144,11 +149,11 @@ exports.updateCart = async function(data) {
   // return errors or valid input = True
   return {
     errors,
-    isValid: isEmpty(errors)
+    isValid: isEmpty(errors),
   };
 };
 
-exports.createOrder = function(data, cart, addresses) {
+exports.createOrder = function (data, cart, addresses) {
   let errors = {};
 
   // convert empty fields to empty strings to use validator functions
@@ -159,14 +164,14 @@ exports.createOrder = function(data, cart, addresses) {
   data.billingAddress = !isEmpty(data.billingAddress)
     ? data.billingAddress
     : "";
-  data.isGift = !isEmpty(data.isGift) ? data.isGift : "";
+  data.isGift = !isEmpty(data.isGift) ? String(data.isGift) : "";
   data.deliveryType = !isEmpty(data.deliveryType) ? data.deliveryType : "";
 
   // cart validation
   if (cart.length === 0) {
     errors.cart = "Cart cannot be empty";
   } else {
-    cart.forEach(item => {
+    cart.forEach((item) => {
       if (item.quantity > item.product.stock) {
         if (!Array.isArray(errors.cart)) {
           errors.cart = [];
@@ -179,7 +184,7 @@ exports.createOrder = function(data, cart, addresses) {
   // shippingAddress validation
   if (
     !addresses.some(
-      address =>
+      (address) =>
         String(address._id) === data.shippingAddress &&
         address.isDelivery === true
     )
@@ -190,7 +195,7 @@ exports.createOrder = function(data, cart, addresses) {
   // billingAddress validation
   if (
     !addresses.some(
-      address =>
+      (address) =>
         String(address._id) === data.billingAddress &&
         address.isBilling === true
     )
@@ -215,6 +220,46 @@ exports.createOrder = function(data, cart, addresses) {
   // return errors or valid input = True
   return {
     errors,
-    isValid: isEmpty(errors)
+    isValid: isEmpty(errors),
+  };
+};
+
+exports.rateProduct = async function (data, user) {
+  let errors = {};
+
+  // convert empty fields to empty strings to use validator functions
+  data.product = !isEmpty(data.product) ? data.product : "";
+  data.rating = !isEmpty(data.rating) ? String(data.rating) : "";
+
+  // product validation
+  if (Validator.isEmpty(data.product)) {
+    errors.product = "Product is required";
+  } else if (!mongoose.Types.ObjectId.isValid(data.product)) {
+    errors.product = "Product is not a valid id";
+  } else if (!(await Product.exists({ _id: data.product }))) {
+    errors.product = "Product does not exist";
+  } else if (
+    await Product.exists({ _id: data.product, "ratings.user": user })
+  ) {
+    errors.product = "Product already rated";
+  } else if (
+    !(await Order.exists({ user: user, "products.product._id": data.product }))
+  ) {
+    errors.product = "Product not purchased";
+  }
+
+  // rating validation
+  if (Validator.isEmpty(data.rating)) {
+    errors.rating = "Rating is required";
+  } else if (!Validator.isNumeric(data.rating)) {
+    errors.rating = "Rating should be a number";
+  } else if (!Validator.isInt(data.rating, { min: 1, max: 5 })) {
+    errors.rating = "Rating should be between 1-5";
+  }
+
+  // return errors or valid input = True
+  return {
+    errors,
+    isValid: isEmpty(errors),
   };
 };

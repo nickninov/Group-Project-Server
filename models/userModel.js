@@ -9,38 +9,42 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
   email: {
     type: String,
-    required: true
+    required: true,
   },
   password: {
     type: String,
-    required: true
+    required: true,
   },
   firstName: {
     type: String,
-    required: true
+    required: true,
   },
   lastName: {
     type: String,
-    required: true
+    required: true,
   },
   phone: {
     type: String,
-    required: true
+    required: true,
   },
   addresses: [AddressSchema],
   cart: [
     {
       quantity: Number,
       product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "products"
-      }
-    }
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "products",
+      },
+    },
   ],
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
   date: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // create model from UserSchema

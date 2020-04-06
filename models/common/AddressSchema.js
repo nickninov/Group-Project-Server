@@ -8,26 +8,26 @@ const Schema = mongoose.Schema;
 const AddressSchema = new Schema({
   firstLine: {
     type: String,
-    required: true
+    required: true,
   },
   secondLine: {
     type: String,
-    required: false
+    required: false,
   },
   townCity: {
     type: String,
-    required: true
+    required: true,
   },
   county: {
     type: String,
-    required: true
+    required: true,
   },
   postcode: {
     type: String,
-    required: true
+    required: true,
   },
   isBilling: Boolean,
-  isDelivery: Boolean
+  isDelivery: Boolean,
 });
 
 // export schema

@@ -1,35 +1,36 @@
 // userController.js
 
-const mongoose = require("mongoose");
-
-// require models
-const User = require("../models/userModel");
-const Order = require("../models/orderModel");
+// require validation
 const userValidation = require("./validation/userValidation.js");
 
+// require models
+const Product = require("../models/productModel");
+const User = require("../models/userModel");
+const Order = require("../models/orderModel");
+
 // route to get user avatar info
-exports.getUser = function(req, res) {
+exports.getUser = function (req, res) {
   // return total of product quantities
   // *TODO* Cart length should equal individual items
-  User.findById(req.user.id, "firstName cart", {}).then(function(items) {
+  User.findById(req.user.id, "firstName cart", {}).then(function (items) {
     const data = { firstName: items.firstName, cartAmount: items.cart.length };
     res.send(data);
   });
 };
 
 // route to get user account info
-exports.getAcc = function(req, res) {
+exports.getAcc = function (req, res) {
   User.findById(
     req.user.id,
     "firstName lastName email phone addresses",
     {}
-  ).then(function(data) {
+  ).then(function (data) {
     res.send(data);
   });
 };
 
 // route to update user account info
-exports.updateAcc = function(req, res) {
+exports.updateAcc = function (req, res) {
   // check if request is valid
   const { errors, isValid } = userValidation.updateAcc(req.body);
   if (!isValid) {
@@ -43,205 +44,115 @@ exports.updateAcc = function(req, res) {
       lastName: req.body.lastName,
       email: req.body.email,
       phone: req.body.phone,
-      $set: { addresses: req.body.addresses }
+      $set: { addresses: req.body.addresses },
     },
     { new: true, select: "firstName lastName email phone addresses" }
-  ).then(function(data) {
+  ).then(function (data) {
     res.send(data);
   });
 };
 
 // route to get user cart
-exports.getCart = function(req, res) {
-  User.aggregate([
-    {
-      $match: {
-        _id: mongoose.Types.ObjectId(req.user.id)
-      }
-    },
-    { $unwind: "$cart" },
-    {
-      $lookup: {
-        from: "products",
-        localField: "cart.product",
-        foreignField: "_id",
-        as: "cart.product"
-      }
-    },
-    { $unwind: "$cart.product" },
-    {
-      $project: {
-        _id: 1,
-        "cart.quantity": 1,
-        "cart.product.images": 1,
-        "cart.product.sku": 1,
-        "cart.product.stock": 1,
-        "cart.product.name": 1,
-        "cart.product.description": 1,
-        "cart.product.discount": 1,
-        "cart.product.price": 1,
-        "cart.subTotal": {
-          $multiply: [
-            {
-              $multiply: [
-                {
-                  $divide: [{ $subtract: [100, "$cart.product.discount"] }, 100]
-                },
-                "$cart.product.price"
-              ]
-            },
-            "$cart.quantity"
-          ]
-        }
-      }
-    },
-    {
-      $group: {
-        _id: "$_id",
-        cart: { $push: "$cart" },
-        total: { $sum: "$cart.subTotal" }
-      }
-    }
-  ]).then(function(data) {
-    res.send(data[0] != null ? data[0] : {});
-  });
+exports.getCart = function (req, res) {
+  User.findById(req.user.id, "cart", {})
+    .populate(
+      "cart.product",
+      "images sku stock name description discount price"
+    )
+    .lean()
+    .then(function (data) {
+      let total = 0;
+      data.cart.forEach(function (item) {
+        item.subTotal =
+          item.quantity *
+          (item.product.price -
+            (item.product.discount / item.product.price) * 100);
+        total += item.subTotal;
+      });
+      data.total = total;
+      res.send(data);
+    });
 };
 
 // route to update user cart
-exports.updateCart = async function(req, res) {
+exports.updateCart = async function (req, res) {
   // check if request is valid
   const { errors, isValid } = await userValidation.updateCart(req.body);
   if (!isValid) {
     return res.status(400).json(errors);
   }
-  // *TODO* merge identical products
-  User.findByIdAndUpdate(req.user.id, {
-    $set: { cart: req.body.cart }
-  }).then(function() {
-    User.aggregate([
-      {
-        $match: {
-          _id: mongoose.Types.ObjectId(req.user.id)
-        }
-      },
-      { $unwind: "$cart" },
-      {
-        $lookup: {
-          from: "products",
-          localField: "cart.product",
-          foreignField: "_id",
-          as: "cart.product"
-        }
-      },
-      { $unwind: "$cart.product" },
-      {
-        $project: {
-          _id: 1,
-          "cart.quantity": 1,
-          "cart.product.images": 1,
-          "cart.product.sku": 1,
-          "cart.product.stock": 1,
-          "cart.product.name": 1,
-          "cart.product.description": 1,
-          "cart.product.discount": 1,
-          "cart.product.price": 1,
-          "cart.subTotal": {
-            $multiply: [
-              {
-                $multiply: [
-                  {
-                    $divide: [
-                      { $subtract: [100, "$cart.product.discount"] },
-                      100
-                    ]
-                  },
-                  "$cart.product.price"
-                ]
-              },
-              "$cart.quantity"
-            ]
-          }
-        }
-      },
-      {
-        $group: {
-          _id: "$_id",
-          cart: { $push: "$cart" },
-          total: { $sum: "$cart.subTotal" }
-        }
-      }
-    ]).then(function(data) {
-      res.send(data[0]);
-    });
+  // Merge identical products
+  var map = req.body.cart.reduce(function (map, e) {
+    map[e.product] = +e.quantity + (map[e.product] || 0);
+    return map;
+  }, {});
+  let cart = Object.keys(map).map(function (k) {
+    return { product: k, quantity: map[k] };
   });
+
+  // Update cart and return
+  User.findByIdAndUpdate(
+    req.user.id,
+    {
+      $set: { cart: cart },
+    },
+    { new: true, select: "cart" }
+  )
+    .populate({
+      path: "cart.product",
+      model: Product,
+      select: "images sku stock name description discount price",
+    })
+    .lean()
+    .then(function (data) {
+      // Add subtotal/totals to cart
+      let total = 0;
+      data.cart.forEach(function (item) {
+        item.subTotal =
+          item.quantity *
+          (item.product.price -
+            (item.product.discount / item.product.price) * 100);
+        total += item.subTotal;
+      });
+      data.total = total;
+      res.send(data);
+    });
 };
 
 // route to get user orders
-exports.getOrders = function(req, res) {
-  Order.aggregate([
-    {
-      $match: {
-        user: mongoose.Types.ObjectId(req.user.id)
-      }
-    },
-    { $unwind: "$products" },
-    {
-      $project: {
-        _id: 1,
-        orderNo: 1,
-        status: 1,
-        shippingAddress: 1,
-        billingAddress: 1,
-        isGift: 1,
-        deliveryType: 1,
-        date: 1,
-        "products.quantity": 1,
-        "products.product.images": 1,
-        "products.product.sku": 1,
-        "products.product.stock": 1,
-        "products.product.name": 1,
-        "products.product.description": 1,
-        "products.product.discount": 1,
-        "products.product.price": 1,
-        "products.subTotal": {
-          $multiply: [
-            {
-              $multiply: [
-                {
-                  $divide: [
-                    { $subtract: [100, "$products.product.discount"] },
-                    100
-                  ]
-                },
-                "$products.product.price"
-              ]
-            },
-            "$products.quantity"
-          ]
-        }
-      }
-    },
-    {
-      $group: {
-        _id: "$_id",
-        orderNo: { $first: "$orderNo" },
-        status: { $first: "$status" },
-        shippingAddress: { $first: "$shippingAddress" },
-        billingAddress: { $first: "$billingAddress" },
-        isGift: { $first: "$isGift" },
-        deliveryType: { $first: "$deliveryType" },
-        date: { $first: "$date" },
-        products: { $push: "$products" },
-        total: { $sum: "$products.subTotal" }
-      }
-    }
-  ]).then(function(data) {
-    res.send(data);
-  });
+exports.getOrders = function (req, res) {
+  Order.find(
+    { user: req.user.id },
+    "orderNo deliveryType isGift status shippingAddress billingAddress products date user"
+  )
+    .populate({
+      path: "products.product.rating",
+      select: { ratings: { $elemMatch: { user: req.user.id } } },
+    })
+    .lean()
+    .then(function (data) {
+      data.forEach(function (order) {
+        let total = 0;
+        order.products.forEach(function (item) {
+          if (item.product.rating.ratings) {
+            item.product.rating = item.product.rating.ratings[0].rating;
+          } else {
+            item.product.rating = 0;
+          }
+          item.subTotal =
+            item.quantity *
+            (item.product.price -
+              (item.product.discount / item.product.price) * 100);
+          total += item.subTotal;
+        });
+        order.total = total;
+      });
+      res.send(data);
+    });
 };
 
 // route to create user order
-exports.createOrder = function(req, res) {
+exports.createOrder = function (req, res) {
   // check if request is valid
   const { errors, isValid } = userValidation.createOrder(
     req.body,
@@ -251,85 +162,54 @@ exports.createOrder = function(req, res) {
   if (!isValid) {
     return res.status(400).json(errors);
   }
-  // *TODO* depleat stock transaction
+
   new Order({
     shippingAddress: req.user.addresses.find(
-      address => String(address._id) === req.body.shippingAddress
+      (address) => String(address._id) === req.body.shippingAddress
     ),
     billingAddress: req.user.addresses.find(
-      address => String(address._id) === req.body.billingAddress
+      (address) => String(address._id) === req.body.billingAddress
     ),
     products: req.user.cart,
     user: req.user.id,
     isGift: req.body.isGift,
-    deliveryType: req.body.deliveryType
+    deliveryType: req.body.deliveryType,
   })
     .save()
-    .then(function(data) {
-      User.findByIdAndUpdate(req.user.id, {
-        $set: { cart: [] }
-      }).then(function() {
-        Order.aggregate([
-          {
-            $match: {
-              user: mongoose.Types.ObjectId(req.user.id),
-              _id: data._id
-            }
-          },
-          { $unwind: "$products" },
-          {
-            $project: {
-              _id: 1,
-              orderNo: 1,
-              status: 1,
-              shippingAddress: 1,
-              billingAddress: 1,
-              isGift: 1,
-              deliveryType: 1,
-              date: 1,
-              "products.quantity": 1,
-              "products.product.images": 1,
-              "products.product.sku": 1,
-              "products.product.stock": 1,
-              "products.product.name": 1,
-              "products.product.description": 1,
-              "products.product.discount": 1,
-              "products.product.price": 1,
-              "products.subTotal": {
-                $multiply: [
-                  {
-                    $multiply: [
-                      {
-                        $divide: [
-                          { $subtract: [100, "$products.product.discount"] },
-                          100
-                        ]
-                      },
-                      "$products.product.price"
-                    ]
-                  },
-                  "$products.quantity"
-                ]
-              }
-            }
-          },
-          {
-            $group: {
-              _id: "$_id",
-              orderNo: { $first: "$orderNo" },
-              status: { $first: "$status" },
-              shippingAddress: { $first: "$shippingAddress" },
-              billingAddress: { $first: "$billingAddress" },
-              isGift: { $first: "$isGift" },
-              deliveryType: { $first: "$deliveryType" },
-              date: { $first: "$date" },
-              products: { $push: "$products" },
-              total: { $sum: "$products.subTotal" }
-            }
-          }
-        ]).then(function(data) {
-          res.send(data[0]);
-        });
+    .then(async function (data) {
+      await User.findByIdAndUpdate(req.user.id, {
+        $set: { cart: [] },
       });
+      let total = 0;
+      data = data.toObject();
+      data.products.forEach(async function (item) {
+        await Product.findByIdAndUpdate(item.product._id, {
+          $inc: { stock: -item.quantity },
+        });
+        item.subTotal =
+          item.quantity *
+          (item.product.price -
+            (item.product.discount / item.product.price) * 100);
+        total += item.subTotal;
+      });
+      data.total = total;
+      res.send(data);
     });
+};
+
+// route to rate purchased product
+exports.rateProduct = async function (req, res) {
+  // check if request is valid
+  const { errors, isValid } = await userValidation.rateProduct(
+    req.body,
+    req.user.id
+  );
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
+  await Product.findByIdAndUpdate(req.body.product, {
+    $push: { ratings: { rating: req.body.rating, user: req.user.id } },
+  });
+  res.send({ _id: req.body.product, rating: req.body.rating });
 };

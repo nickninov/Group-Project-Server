@@ -1,7 +1,7 @@
 // isEmpty.js
 
 // return boolean based on emptiness or existence
-const isEmpty = value => {
+const isEmpty = (value) => {
   return (
     value === undefined ||
     value === null ||

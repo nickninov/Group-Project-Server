@@ -9,13 +9,15 @@ const config = require("./db");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const searchRoutes = require("./routes/searchRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const isAdmin = require("./middlewares/isAdmin");
 
 // connect to database
 mongoose.connect(config.DB, { useNewUrlParser: true, ssl: false }).then(
   () => {
     console.log("Database is connected");
   },
-  err => {
+  (err) => {
     console.log("Can not connect to the database" + err);
   }
 );
@@ -48,13 +50,19 @@ app.use((req, res, next) => {
 app.use("/v1/auth", authRoutes);
 app.use("/v1/search", searchRoutes);
 app.use(
+  "/v1/admin",
+  passport.authenticate("jwt", { session: false }),
+  isAdmin,
+  adminRoutes
+);
+app.use(
   "/v1/user",
   passport.authenticate("jwt", { session: false }),
   userRoutes
 );
 
 // debug route for testing API
-app.get("/", function(req, res) {
+app.get("/", function (req, res) {
   res.send("hello");
 });
 

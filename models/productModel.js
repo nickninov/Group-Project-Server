@@ -7,63 +7,75 @@ const Schema = mongoose.Schema;
 const ProductSchema = new Schema({
   sku: {
     type: String,
-    required: true
+    required: true,
   },
   shippingDetails: {
     height: {
       type: Number,
-      required: true
+      required: true,
     },
     width: {
       type: Number,
-      required: true
+      required: true,
     },
     length: {
       type: Number,
-      required: true
+      required: true,
     },
     weight: {
       type: Number,
-      required: true
-    }
+      required: true,
+    },
   },
   stock: {
     type: Number,
-    required: true
+    required: true,
   },
   images: [
     {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   ],
   name: {
     type: String,
-    required: true
+    required: true,
   },
   description: {
     type: String,
-    required: true
+    required: true,
   },
   tags: [String],
   categories: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "categories"
-    }
+      ref: "categories",
+    },
   ],
+  ratings: {
+    type: [
+      {
+        rating: Number,
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "users",
+        },
+      },
+    ],
+    default: [],
+  },
   discount: {
     type: Number,
-    required: true
+    required: true,
   },
   price: {
     type: Number,
-    required: true
+    required: true,
   },
   date: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // create model from ProductSchema

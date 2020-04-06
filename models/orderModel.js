@@ -10,46 +10,52 @@ const Schema = mongoose.Schema;
 const ProductSchema = new Schema({
   sku: {
     type: String,
-    required: true
+    required: true,
   },
   shippingDetails: {
     height: {
       type: Number,
-      required: true
+      required: true,
     },
     width: {
       type: Number,
-      required: true
+      required: true,
     },
     length: {
       type: Number,
-      required: true
+      required: true,
     },
     weight: {
       type: Number,
-      required: true
-    }
+      required: true,
+    },
   },
+  images: [
+    {
+      type: String,
+      required: true,
+    },
+  ],
   name: {
     type: String,
-    required: true
+    required: true,
   },
   description: {
     type: String,
-    required: true
+    required: true,
   },
   discount: {
     type: Number,
-    required: true
+    required: true,
   },
   price: {
     type: Number,
-    required: true
+    required: true,
   },
   date: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 // schema design for orders
@@ -59,26 +65,34 @@ const OrderSchema = new Schema({
   products: [
     {
       quantity: Number,
-      product: ProductSchema
-    }
+      product: ProductSchema,
+    },
   ],
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
+    ref: "User",
   },
   status: {
     type: String,
-    default: "ordered"
+    default: "ordered",
   },
   deliveryType: String,
   isGift: Boolean,
   orderNo: Number,
   date: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 OrderSchema.plugin(AutoIncrement, { inc_field: "orderNo", start_seq: 10000 });
+
+OrderSchema.virtual("products.product.rating", {
+  type: "ObjectId",
+  ref: "products",
+  localField: "products.product._id",
+  foreignField: "_id",
+  justOne: true,
+});
 
 // create model from OrderSchema
 const Order = mongoose.model("orders", OrderSchema);

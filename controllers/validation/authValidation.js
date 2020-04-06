@@ -5,7 +5,7 @@ const Validator = require("validator");
 const isEmpty = require("./common/isEmpty");
 
 // export login validation function for use in routes
-exports.login = function(data) {
+exports.login = function (data) {
   let errors = {};
 
   // convert empty fields to empty strings to use validator functions
@@ -29,12 +29,12 @@ exports.login = function(data) {
   // return errors or valid input = True
   return {
     errors,
-    isValid: isEmpty(errors)
+    isValid: isEmpty(errors),
   };
 };
 
 // export register validation function for use in routes
-exports.register = function(data) {
+exports.register = function (data) {
   let errors = {};
 
   // convert empty fields to empty strings to use validator functions
@@ -89,6 +89,6 @@ exports.register = function(data) {
   // return errors or valid input = True
   return {
     errors,
-    isValid: isEmpty(errors)
+    isValid: isEmpty(errors),
   };
 };

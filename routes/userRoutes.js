@@ -20,5 +20,8 @@ router.route("/cart").put(userController.updateCart);
 router.route("/order").get(userController.getOrders);
 router.route("/order").post(userController.createOrder);
 
+// user product review routes
+router.route("/rate").put(userController.rateProduct);
+
 // export API routes
 module.exports = router;

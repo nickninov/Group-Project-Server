@@ -9,7 +9,7 @@ const authValidation = require("./validation/authValidation.js");
 const User = require("../models/userModel");
 
 // route for new user registration
-exports.register = function(req, res) {
+exports.register = function (req, res) {
   // check if request is valid
   const { errors, isValid } = authValidation.register(req.body);
   if (!isValid) {
@@ -18,8 +18,8 @@ exports.register = function(req, res) {
 
   // check if email already exists
   User.findOne({
-    email: req.body.email
-  }).then(user => {
+    email: req.body.email,
+  }).then((user) => {
     if (user) {
       errors.email = "Email already exists";
       return res.status(400).json(errors);
@@ -30,7 +30,7 @@ exports.register = function(req, res) {
         password: req.body.password,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
-        phone: req.body.phone
+        phone: req.body.phone,
       });
 
       // generate salt for hashing
@@ -42,23 +42,24 @@ exports.register = function(req, res) {
             if (err) console.error("There was an error", err);
             else {
               newUser.password = hash;
-              newUser.save().then(user => {
+              newUser.save().then((user) => {
                 const payload = {
-                  id: user.id
+                  id: user.id,
+                  isAdmin: user.isAdmin,
                 };
                 // sign and return JWT
                 jwt.sign(
                   payload,
                   "secret",
                   {
-                    expiresIn: 3600
+                    expiresIn: 3600,
                   },
                   (err, token) => {
                     if (err) console.error("There is some error in token", err);
                     else {
                       res.json({
                         success: true,
-                        token: `Bearer ${token}`
+                        token: `Bearer ${token}`,
                       });
                     }
                   }
@@ -73,7 +74,7 @@ exports.register = function(req, res) {
 };
 
 // login route
-exports.login = function(req, res) {
+exports.login = function (req, res) {
   // check if request is valid
   const { errors, isValid } = authValidation.login(req.body);
   if (!isValid) {
@@ -83,30 +84,30 @@ exports.login = function(req, res) {
   // check if user exists
   const email = req.body.email;
   const password = req.body.password;
-  User.findOne({ email }).then(user => {
+  User.findOne({ email }).then((user) => {
     if (!user) {
       errors.email = "User not found";
       return res.status(404).json(errors);
     }
     // check password matches
-    bcrypt.compare(password, user.password).then(isMatch => {
+    bcrypt.compare(password, user.password).then((isMatch) => {
       if (isMatch) {
         const payload = {
-          id: user.id
+          id: user.id,
         };
         // sign, set token expiry time and return JWT
         jwt.sign(
           payload,
           "secret",
           {
-            expiresIn: 3600
+            expiresIn: 3600,
           },
           (err, token) => {
             if (err) console.error("There is some error in token", err);
             else {
               res.json({
                 success: true,
-                token: `Bearer ${token}`
+                token: `Bearer ${token}`,
               });
             }
           }
