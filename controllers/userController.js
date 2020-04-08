@@ -70,11 +70,11 @@ exports.getCart = function (req, res) {
       data.cart.forEach(function (item) {
         item.subTotal = roundNum(
           item.quantity *
-            (((100 - item.product.discount) / 100) * item.product.price)
+            roundNum(((100 - item.product.discount) / 100) * item.product.price)
         );
         total += item.subTotal;
       });
-      data.total = total;
+      data.total = roundNum(total);
       res.send(data);
     });
 };
@@ -115,11 +115,11 @@ exports.updateCart = async function (req, res) {
       data.cart.forEach(function (item) {
         item.subTotal = roundNum(
           item.quantity *
-            (((100 - item.product.discount) / 100) * item.product.price)
+            roundNum(((100 - item.product.discount) / 100) * item.product.price)
         );
         total += item.subTotal;
       });
-      data.total = total;
+      data.total = roundNum(total);
       res.send(data);
     });
 };
@@ -146,11 +146,13 @@ exports.getOrders = function (req, res) {
           }
           item.subTotal = roundNum(
             item.quantity *
-              (((100 - item.product.discount) / 100) * item.product.price)
+              roundNum(
+                ((100 - item.product.discount) / 100) * item.product.price
+              )
           );
           total += item.subTotal;
         });
-        order.total = total;
+        order.total = roundNum(total);
       });
       res.send(data);
     });
@@ -190,14 +192,14 @@ exports.createOrder = function (req, res) {
       data.products.forEach(async function (item) {
         item.subTotal = roundNum(
           item.quantity *
-            (((100 - item.product.discount) / 100) * item.product.price)
+            roundNum(((100 - item.product.discount) / 100) * item.product.price)
         );
         total += item.subTotal;
         await Product.findByIdAndUpdate(item.product._id, {
           $inc: { stock: -item.quantity },
         });
       });
-      data.total = total;
+      data.total = roundNum(total);
       res.send(data);
     });
 };

@@ -174,14 +174,19 @@ exports.getOrders = function (req, res) {
             {
               $multiply: [
                 {
-                  $multiply: [
+                  $round: [
                     {
-                      $divide: [
-                        { $subtract: [100, "$products.product.discount"] },
-                        100,
+                      $multiply: [
+                        {
+                          $divide: [
+                            { $subtract: [100, "$products.product.discount"] },
+                            100,
+                          ],
+                        },
+                        "$products.product.price",
                       ],
                     },
-                    "$products.product.price",
+                    2,
                   ],
                 },
                 "$products.quantity",
@@ -206,6 +211,11 @@ exports.getOrders = function (req, res) {
         total: { $sum: "$products.subTotal" },
       },
     },
+    {
+      $addFields: {
+        total: { $round: ["$total", 2] },
+      },
+    },
     // remove to return orders without internal grouping
     {
       $group: {
@@ -226,6 +236,11 @@ exports.getOrders = function (req, res) {
             total: "$total",
           },
         },
+      },
+    },
+    {
+      $addFields: {
+        totalRevenue: { $round: ["$totalRevenue", 2] },
       },
     },
   ]).then(function (data) {
