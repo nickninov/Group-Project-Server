@@ -8,10 +8,15 @@ const Product = require("../models/productModel");
 const User = require("../models/userModel");
 const Order = require("../models/orderModel");
 
+function roundNum(num) {
+  return Number(Math.round(num + "e2") + "e-2");
+}
+
+// function calcTotals() {}
+
 // route to get user avatar info
 exports.getUser = function (req, res) {
   // return total of product quantities
-  // *TODO* Cart length should equal individual items
   User.findById(req.user.id, "firstName cart", {}).then(function (items) {
     const data = { firstName: items.firstName, cartAmount: items.cart.length };
     res.send(data);
@@ -63,10 +68,10 @@ exports.getCart = function (req, res) {
     .then(function (data) {
       let total = 0;
       data.cart.forEach(function (item) {
-        item.subTotal =
+        item.subTotal = roundNum(
           item.quantity *
-          (item.product.price -
-            (item.product.discount / item.product.price) * 100);
+            (((100 - item.product.discount) / 100) * item.product.price)
+        );
         total += item.subTotal;
       });
       data.total = total;
@@ -108,10 +113,10 @@ exports.updateCart = async function (req, res) {
       // Add subtotal/totals to cart
       let total = 0;
       data.cart.forEach(function (item) {
-        item.subTotal =
+        item.subTotal = roundNum(
           item.quantity *
-          (item.product.price -
-            (item.product.discount / item.product.price) * 100);
+            (((100 - item.product.discount) / 100) * item.product.price)
+        );
         total += item.subTotal;
       });
       data.total = total;
@@ -139,10 +144,10 @@ exports.getOrders = function (req, res) {
           } else {
             item.product.rating = 0;
           }
-          item.subTotal =
+          item.subTotal = roundNum(
             item.quantity *
-            (item.product.price -
-              (item.product.discount / item.product.price) * 100);
+              (((100 - item.product.discount) / 100) * item.product.price)
+          );
           total += item.subTotal;
         });
         order.total = total;
@@ -183,14 +188,14 @@ exports.createOrder = function (req, res) {
       let total = 0;
       data = data.toObject();
       data.products.forEach(async function (item) {
+        item.subTotal = roundNum(
+          item.quantity *
+            (((100 - item.product.discount) / 100) * item.product.price)
+        );
+        total += item.subTotal;
         await Product.findByIdAndUpdate(item.product._id, {
           $inc: { stock: -item.quantity },
         });
-        item.subTotal =
-          item.quantity *
-          (item.product.price -
-            (item.product.discount / item.product.price) * 100);
-        total += item.subTotal;
       });
       data.total = total;
       res.send(data);

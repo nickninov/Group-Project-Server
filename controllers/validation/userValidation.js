@@ -58,7 +58,7 @@ exports.updateAcc = function (data) {
 
     // firstLine validation
     if (Validator.isEmpty(address.firstLine)) {
-      error.firstLine = "Firstline is required";
+      error.firstLine = "First Line is required";
     }
     // townCity validation
     if (Validator.isEmpty(address.townCity)) {

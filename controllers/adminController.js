@@ -170,19 +170,24 @@ exports.getOrders = function (req, res) {
         "products.product.discount": 1,
         "products.product.price": 1,
         "products.subTotal": {
-          $multiply: [
+          $round: [
             {
               $multiply: [
                 {
-                  $divide: [
-                    { $subtract: [100, "$products.product.discount"] },
-                    100,
+                  $multiply: [
+                    {
+                      $divide: [
+                        { $subtract: [100, "$products.product.discount"] },
+                        100,
+                      ],
+                    },
+                    "$products.product.price",
                   ],
                 },
-                "$products.product.price",
+                "$products.quantity",
               ],
             },
-            "$products.quantity",
+            2,
           ],
         },
       },

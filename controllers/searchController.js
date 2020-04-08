@@ -62,6 +62,7 @@ exports.getProduct = function (req, res) {
         categories: 1,
         sku: 1,
         name: 1,
+        stock: 1,
         description: 1,
         discount: 1,
         price: 1,
