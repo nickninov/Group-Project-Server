@@ -55,15 +55,24 @@ exports.getProduct = function (req, res) {
       },
     },
     {
+      $lookup: {
+        from: "categories",
+        localField: "categories",
+        foreignField: "_id",
+        as: "categories",
+      },
+    },
+    {
       $project: {
         shippingDetails: 1,
         images: 1,
         tags: 1,
-        categories: 1,
         sku: 1,
         name: 1,
         stock: 1,
         description: 1,
+        "categories._id": 1,
+        "categories.name": 1,
         discount: 1,
         price: 1,
         rating: {
