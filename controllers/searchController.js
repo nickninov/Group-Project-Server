@@ -6,28 +6,28 @@ const mongoose = require("mongoose");
 const Product = require("../models/productModel");
 const Category = require("../models/categoryModel");
 
-// route to get
+// route to get all categories
 exports.getAllCategories = function (req, res) {
   Category.find({}, "name description image").then(function (data) {
     res.send(data);
   });
 };
 
-// route to get
-exports.getCategory = function (req, res) {
-  Category.findById(req.params.id, "name description image", {})
-    .populate({
-      path: "products",
-      model: Product,
-      select:
-        "shippingDetails images tags sku stock name description discount price",
-    })
-    .then(function (data) {
-      res.send(data);
-    });
-};
+// route to get categories by id
+// exports.getCategory = function (req, res) {
+//   Category.findById(req.params.id, "name description image", {})
+//     .populate({
+//       path: "products",
+//       model: Product,
+//       select:
+//         "shippingDetails images tags sku stock name description discount price",
+//     })
+//     .then(function (data) {
+//       res.send(data);
+//     });
+// };
 
-// route to get
+// route to get all products
 exports.getAllProducts = function (req, res) {
   Product.find(
     {},
@@ -39,7 +39,7 @@ exports.getAllProducts = function (req, res) {
     });
 };
 
-// route to get
+// route to get product by id
 exports.getProduct = function (req, res) {
   objectId = mongoose.Types.ObjectId.isValid(req.params.param)
     ? mongoose.Types.ObjectId(req.params.param)
@@ -49,8 +49,9 @@ exports.getProduct = function (req, res) {
       $match: {
         $or: [
           { _id: objectId },
+          { categories: objectId },
           { sku: req.params.param },
-          { name: { $regex: req.params.param, $options: "i" } },
+          { name: { $regex: req.params.param, $options: "i" }, }
         ],
       },
     },
